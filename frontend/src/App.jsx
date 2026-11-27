@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route, Navigate, Link, useNavigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Link, useLocation, useNavigate } from 'react-router-dom';
+import { ShieldPlus } from 'lucide-react';
 import { LanguageProvider, useLang } from './context/LanguageContext';
 import { T } from './lang/translations';
 import Login from './pages/Login';
@@ -12,13 +13,12 @@ function PrivateRoute({ children }) {
   return token ? children : <Navigate to="/" replace />;
 }
 
-function Navbar() {
+function Header() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { lang, toggleLang } = useLang();
   const tx = T[lang];
   const isLoggedIn = Boolean(localStorage.getItem('token'));
-
-  if (!isLoggedIn) return null;
 
   const logout = () => {
     localStorage.removeItem('token');
@@ -26,28 +26,63 @@ function Navbar() {
     navigate('/');
   };
 
+  const navLinkClass = (path) =>
+    `px-3 py-2 text-sm font-medium border-b-2 transition ${
+      location.pathname === path
+        ? 'border-[#0a3d62] text-[#0a3d62] font-semibold'
+        : 'border-transparent text-slate-600 hover:text-[#0a3d62]'
+    }`;
+
   return (
-    <nav className="bg-white shadow-sm px-6 py-4">
-      <div className="max-w-6xl mx-auto flex justify-between items-center">
-        <Link to="/dashboard" className="text-xl font-bold text-blue-600">
-          CKD Insight
-        </Link>
-        <div className="flex items-center gap-4 text-sm font-medium flex-wrap">
-          <Link to="/dashboard" className="text-gray-700 hover:text-blue-600">{tx.dashboard}</Link>
-          <Link to="/history"   className="text-gray-700 hover:text-blue-600">{tx.history}</Link>
-          <Link to="/trends"    className="text-gray-700 hover:text-blue-600">{tx.trends}</Link>
+    <header className="bg-white border-b-4 border-[#0a3d62] shadow-sm">
+      {/* Top official health portal bar */}
+      <div className="bg-[#0a3d62] text-white text-xs py-1.5 px-6">
+        <div className="max-w-6xl mx-auto flex justify-between items-center">
+          <span>
+            {lang === 'hi'
+              ? 'राष्ट्रीय किडनी स्वास्थ्य एवं CKD जांच पोर्टल • क्लिनिकल सहायता प्रणाली'
+              : 'National Renal Health & CKD Screening Portal • Clinical Decision Support'}
+          </span>
           <button
             onClick={toggleLang}
-            className="border border-gray-300 rounded px-2 py-0.5 text-gray-600 hover:bg-gray-100"
+            className="bg-white/15 hover:bg-white/25 text-white px-2.5 py-0.5 rounded text-xs cursor-pointer"
           >
             {tx.lang}
           </button>
-          <button onClick={logout} className="text-red-600 hover:underline cursor-pointer">
-            {tx.logout}
-          </button>
         </div>
       </div>
-    </nav>
+
+      {/* Main hospital / portal navigation bar */}
+      <div className="max-w-6xl mx-auto px-6 py-3 flex justify-between items-center flex-wrap gap-3">
+        <Link to={isLoggedIn ? '/dashboard' : '/'} className="flex items-center gap-2.5">
+          <div className="bg-[#0a3d62] text-white p-2 rounded-lg">
+            <ShieldPlus className="w-6 h-6" />
+          </div>
+          <div>
+            <span className="text-lg font-bold text-[#0a3d62] block leading-tight">
+              Swasthya CKD Portal
+            </span>
+            <span className="text-[11px] text-slate-500 block">
+              {lang === 'hi' ? 'नेफ्रोलॉजी एवं निवारक देखभाल विभाग' : 'Department of Nephrology & Preventive Care'}
+            </span>
+          </div>
+        </Link>
+
+        {isLoggedIn && (
+          <div className="flex items-center gap-2 flex-wrap">
+            <Link to="/dashboard" className={navLinkClass('/dashboard')}>{tx.dashboard}</Link>
+            <Link to="/history" className={navLinkClass('/history')}>{tx.history}</Link>
+            <Link to="/trends" className={navLinkClass('/trends')}>{tx.trends}</Link>
+            <button
+              onClick={logout}
+              className="ml-2 px-3 py-1.5 bg-red-50 text-red-700 border border-red-200 rounded text-xs font-semibold hover:bg-red-100 cursor-pointer"
+            >
+              {tx.logout}
+            </button>
+          </div>
+        )}
+      </div>
+    </header>
   );
 }
 
@@ -55,17 +90,20 @@ export default function App() {
   return (
     <BrowserRouter>
       <LanguageProvider>
-        <div className="min-h-screen bg-gray-50">
-          <Navbar />
-          <main className="max-w-6xl mx-auto p-6">
+        <div className="min-h-screen flex flex-col bg-slate-100">
+          <Header />
+          <main className="flex-1 max-w-6xl w-full mx-auto p-6">
             <Routes>
-              <Route path="/"         element={<Login />} />
+              <Route path="/" element={<Login />} />
               <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
-              <Route path="/history"   element={<PrivateRoute><History /></PrivateRoute>} />
-              <Route path="/trends"    element={<PrivateRoute><Trends /></PrivateRoute>} />
-              <Route path="*"          element={<Navigate to="/" replace />} />
+              <Route path="/history" element={<PrivateRoute><History /></PrivateRoute>} />
+              <Route path="/trends" element={<PrivateRoute><Trends /></PrivateRoute>} />
+              <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </main>
+          <footer className="bg-[#0a3d62] text-blue-100 text-xs py-3 px-6 text-center">
+            Swasthya CKD Screening Portal • For clinical screening support only. Always consult a qualified Nephrologist.
+          </footer>
         </div>
       </LanguageProvider>
     </BrowserRouter>

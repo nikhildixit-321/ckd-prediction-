@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Stethoscope } from 'lucide-react';
 import { API_BASE_URL } from '../config';
 
 export default function Login() {
@@ -51,77 +52,98 @@ export default function Login() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-[80vh]">
-      <div className="bg-white p-8 rounded-xl shadow-md w-full max-w-sm border border-gray-100">
-        <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
-          {isRegister ? 'Create Account' : 'Sign In'}
-        </h2>
+    <div className="flex items-center justify-center min-h-[75vh]">
+      <div className="bg-white rounded-lg shadow-md w-full max-w-md border border-slate-200 overflow-hidden">
+        {/* Official Hospital Portal Card Header */}
+        <div className="bg-[#0a3d62] text-white px-6 py-4 flex items-center gap-3">
+          <Stethoscope className="w-6 h-6 text-teal-300" />
+          <div>
+            <h2 className="text-lg font-bold">
+              {isRegister ? 'Patient / Doctor Registration' : 'Hospital Portal Sign In'}
+            </h2>
+            <p className="text-xs text-blue-100">Authorized Clinical & Patient Access</p>
+          </div>
+        </div>
 
-        {error && (
-          <p className="mb-4 p-3 bg-red-50 text-red-700 text-sm rounded-lg border border-red-200">
-            {error}
-          </p>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {isRegister && (
-            <>
-              <input
-                type="text"
-                placeholder="Full Name"
-                required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full p-2.5 border rounded-lg text-sm"
-              />
-              <select
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                className="w-full p-2.5 border rounded-lg text-sm bg-white"
-              >
-                <option value="doctor">Doctor</option>
-                <option value="patient">Patient</option>
-              </select>
-            </>
+        <div className="p-6">
+          {error && (
+            <p className="mb-4 p-3 bg-red-50 text-red-700 text-sm rounded border-l-4 border-red-600">
+              {error}
+            </p>
           )}
 
-          <input
-            type="email"
-            placeholder="Email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full p-2.5 border rounded-lg text-sm"
-          />
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {isRegister && (
+              <>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1">Full Name</label>
+                  <input
+                    type="text"
+                    placeholder="Dr. / Patient Name"
+                    required
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full p-2.5 border border-slate-300 rounded text-sm focus:outline-none focus:border-[#0a3d62]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1">Account Role</label>
+                  <select
+                    value={role}
+                    onChange={(e) => setRole(e.target.value)}
+                    className="w-full p-2.5 border border-slate-300 rounded text-sm bg-white focus:outline-none focus:border-[#0a3d62]"
+                  >
+                    <option value="doctor">Doctor / Clinician</option>
+                    <option value="patient">Patient</option>
+                  </select>
+                </div>
+              </>
+            )}
 
-          <input
-            type="password"
-            placeholder="Password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full p-2.5 border rounded-lg text-sm"
-          />
+            <div>
+              <label className="block text-xs font-semibold text-slate-600 mb-1">Email Address</label>
+              <input
+                type="email"
+                placeholder="name@hospital.org"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full p-2.5 border border-slate-300 rounded text-sm focus:outline-none focus:border-[#0a3d62]"
+              />
+            </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg text-sm disabled:opacity-50 cursor-pointer"
-          >
-            {loading ? 'Please wait...' : isRegister ? 'Sign Up' : 'Sign In'}
-          </button>
-        </form>
+            <div>
+              <label className="block text-xs font-semibold text-slate-600 mb-1">Password</label>
+              <input
+                type="password"
+                placeholder="••••••••"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full p-2.5 border border-slate-300 rounded text-sm focus:outline-none focus:border-[#0a3d62]"
+              />
+            </div>
 
-        <p className="mt-4 text-center text-sm text-gray-600">
-          {isRegister ? 'Already have an account? ' : 'Need an account? '}
-          <button
-            type="button"
-            onClick={() => { setError(''); setIsRegister(!isRegister); }}
-            className="text-blue-600 font-medium hover:underline cursor-pointer"
-          >
-            {isRegister ? 'Login' : 'Register'}
-          </button>
-        </p>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-2.5 bg-[#0a3d62] hover:bg-[#08304d] text-white font-semibold rounded text-sm disabled:opacity-50 cursor-pointer"
+            >
+              {loading ? 'Verifying...' : isRegister ? 'Register Account' : 'Sign In to Portal'}
+            </button>
+          </form>
+
+          <p className="mt-5 pt-4 border-t border-slate-200 text-center text-sm text-slate-600">
+            {isRegister ? 'Already registered? ' : 'New user? '}
+            <button
+              type="button"
+              onClick={() => { setError(''); setIsRegister(!isRegister); }}
+              className="text-[#0a3d62] font-semibold hover:underline cursor-pointer"
+            >
+              {isRegister ? 'Sign In' : 'Create Account'}
+            </button>
+          </p>
+        </div>
       </div>
     </div>
   );
