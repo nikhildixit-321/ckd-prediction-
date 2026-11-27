@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate, Link, useLocation, useNavigate } from 'react-router-dom';
-import { ShieldPlus } from 'lucide-react';
+import { ShieldPlus, UserCheck } from 'lucide-react';
 import { LanguageProvider, useLang } from './context/LanguageContext';
 import { T } from './lang/translations';
 import Login from './pages/Login';
@@ -13,12 +13,21 @@ function PrivateRoute({ children }) {
   return token ? children : <Navigate to="/" replace />;
 }
 
+function getStoredUser() {
+  try {
+    return JSON.parse(localStorage.getItem('user') || 'null');
+  } catch {
+    return null;
+  }
+}
+
 function Header() {
   const navigate = useNavigate();
   const location = useLocation();
   const { lang, toggleLang } = useLang();
   const tx = T[lang];
   const isLoggedIn = Boolean(localStorage.getItem('token'));
+  const user = getStoredUser();
 
   const logout = () => {
     localStorage.removeItem('token');
@@ -55,7 +64,7 @@ function Header() {
       {/* Main hospital / portal navigation bar */}
       <div className="max-w-6xl mx-auto px-6 py-3 flex justify-between items-center flex-wrap gap-3">
         <Link to={isLoggedIn ? '/dashboard' : '/'} className="flex items-center gap-2.5">
-          <div className="bg-[#0a3d62] text-white p-2 rounded-lg">
+          <div className="bg-[#0a3d62] text-white p-2 rounded-lg shadow-sm">
             <ShieldPlus className="w-6 h-6" />
           </div>
           <div>
@@ -69,13 +78,21 @@ function Header() {
         </Link>
 
         {isLoggedIn && (
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-3 flex-wrap">
             <Link to="/dashboard" className={navLinkClass('/dashboard')}>{tx.dashboard}</Link>
             <Link to="/history" className={navLinkClass('/history')}>{tx.history}</Link>
             <Link to="/trends" className={navLinkClass('/trends')}>{tx.trends}</Link>
+
+            {user?.name && (
+              <span className="hidden sm:inline-flex items-center gap-1.5 bg-slate-100 border border-slate-200 text-slate-700 px-2.5 py-1 rounded-full text-xs font-medium">
+                <UserCheck className="w-3.5 h-3.5 text-[#0a3d62]" />
+                {user.name} ({user.role === 'doctor' ? 'Doctor' : 'Patient'})
+              </span>
+            )}
+
             <button
               onClick={logout}
-              className="ml-2 px-3 py-1.5 bg-red-50 text-red-700 border border-red-200 rounded text-xs font-semibold hover:bg-red-100 cursor-pointer"
+              className="px-3 py-1.5 bg-red-50 text-red-700 border border-red-200 rounded text-xs font-semibold hover:bg-red-100 cursor-pointer"
             >
               {tx.logout}
             </button>
