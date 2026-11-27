@@ -1,49 +1,51 @@
-import { BrowserRouter as Router, Routes, Route, Navigate, NavLink, useNavigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Link, useNavigate } from 'react-router-dom';
+import { LanguageProvider, useLang } from './context/LanguageContext';
+import { T } from './lang/translations';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import History from './pages/History';
+import Compare from './pages/Compare';
+import Trends from './pages/Trends';
 
-function ProtectedRoute({ children }) {
+// Redirect to login page if user has no token
+function PrivateRoute({ children }) {
   const token = localStorage.getItem('token');
   return token ? children : <Navigate to="/" replace />;
 }
 
 function Navbar() {
   const navigate = useNavigate();
-  const token = localStorage.getItem('token');
+  const { lang, toggleLang } = useLang();
+  const tx = T[lang];
+  const isLoggedIn = Boolean(localStorage.getItem('token'));
 
-  const handleLogout = () => {
+  if (!isLoggedIn) return null;
+
+  const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     navigate('/');
   };
 
-  if (!token) return null;
-
-  const linkClass = ({ isActive }) =>
-    isActive
-      ? 'text-blue-600 font-semibold'
-      : 'text-gray-600 hover:text-gray-900 transition-colors';
-
   return (
-    <nav className="bg-white shadow-sm p-4">
-      <div className="max-w-7xl mx-auto flex justify-between items-center">
-        <NavLink to="/dashboard" className="text-xl font-bold text-blue-600">
+    <nav className="bg-white shadow-sm px-6 py-4">
+      <div className="max-w-6xl mx-auto flex justify-between items-center">
+        <Link to="/dashboard" className="text-xl font-bold text-blue-600">
           CKD Insight
-        </NavLink>
-        <div className="flex items-center space-x-6">
-          <NavLink to="/dashboard" className={linkClass}>
-            Dashboard
-          </NavLink>
-          <NavLink to="/history" className={linkClass}>
-            History
-          </NavLink>
+        </Link>
+        <div className="flex items-center gap-4 text-sm font-medium flex-wrap">
+          <Link to="/dashboard" className="text-gray-700 hover:text-blue-600">{tx.dashboard}</Link>
+          <Link to="/history"   className="text-gray-700 hover:text-blue-600">{tx.history}</Link>
+          <Link to="/compare"   className="text-gray-700 hover:text-blue-600">{tx.compare}</Link>
+          <Link to="/trends"    className="text-gray-700 hover:text-blue-600">{tx.trends}</Link>
           <button
-            type="button"
-            onClick={handleLogout}
-            className="text-gray-600 hover:text-red-600 transition-colors cursor-pointer"
+            onClick={toggleLang}
+            className="border border-gray-300 rounded px-2 py-0.5 text-gray-600 hover:bg-gray-100"
           >
-            Logout
+            {tx.lang}
+          </button>
+          <button onClick={logout} className="text-red-600 hover:underline cursor-pointer">
+            {tx.logout}
           </button>
         </div>
       </div>
@@ -51,36 +53,24 @@ function Navbar() {
   );
 }
 
-function App() {
+export default function App() {
   return (
-    <Router>
-      <div className="min-h-screen bg-gray-50">
-        <Navbar />
-        <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-          <Routes>
-            <Route path="/" element={<Login />} />
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/history"
-              element={
-                <ProtectedRoute>
-                  <History />
-                </ProtectedRoute>
-              }
-            />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </main>
-      </div>
-    </Router>
+    <BrowserRouter>
+      <LanguageProvider>
+        <div className="min-h-screen bg-gray-50">
+          <Navbar />
+          <main className="max-w-6xl mx-auto p-6">
+            <Routes>
+              <Route path="/"         element={<Login />} />
+              <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+              <Route path="/history"   element={<PrivateRoute><History /></PrivateRoute>} />
+              <Route path="/compare"   element={<PrivateRoute><Compare /></PrivateRoute>} />
+              <Route path="/trends"    element={<PrivateRoute><Trends /></PrivateRoute>} />
+              <Route path="*"          element={<Navigate to="/" replace />} />
+            </Routes>
+          </main>
+        </div>
+      </LanguageProvider>
+    </BrowserRouter>
   );
 }
-
-export default App;

@@ -1,139 +1,149 @@
 import { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, X, Send, User, Bot, Loader2 } from 'lucide-react';
+import { MessageCircle, X, Send } from 'lucide-react';
 import axios from 'axios';
 import { API_BASE_URL } from '../config';
+import { useLang } from '../context/LanguageContext';
 
-const Chatbot = ({ patientContext }) => {
+const SUGGESTED_QUESTIONS = {
+  en: [
+    'What does my CKD result mean?',
+    'What foods should I avoid for kidney health?',
+    'What is normal Serum Creatinine & Blood Urea?',
+    'How can I lower my CKD risk?',
+    'Explain my top risk factors'
+  ],
+  hi: [
+    'मेरे CKD रिजल्ट का क्या मतलब है?',
+    'किडनी के लिए कौन से खाने से बचें?',
+    'सामान्य क्रिएटिनिन और यूरिया कितना होता है?',
+    'CKD का खतरा कैसे कम करें?',
+    'मेरे मुख्य जोखिम कारक समझाएं'
+  ]
+};
+
+export default function Chatbot({ patientContext }) {
+  const { lang } = useLang();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
-    { role: 'assistant', text: 'Hello! I am your AI Nephrology Assistant. Ask me anything about Chronic Kidney Disease, your predictions, or kidney health.' }
+    {
+      role: 'assistant',
+      text: 'Hello! I am your Kidney Health AI. Ask me about CKD, your lab values, diet, or prediction report.'
+    }
   ]);
   const [input, setInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const messagesEndRef = useRef(null);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  const [loading, setLoading] = useState(false);
+  const endRef = useRef(null);
 
   useEffect(() => {
-    scrollToBottom();
+    endRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const handleSend = async () => {
-    if (!input.trim()) return;
+  const askQuestion = async (questionText) => {
+    const userText = questionText.trim();
+    if (!userText || loading) return;
 
-    const userMsg = input.trim();
     setInput('');
-    setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
-    setIsLoading(true);
+    setMessages((prev) => [...prev, { role: 'user', text: userText }]);
+    setLoading(true);
 
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/chat`, {
-        message: userMsg,
-        patientContext: patientContext || null
+      const res = await axios.post(`${API_BASE_URL}/api/chat`, {
+        message: userText,
+        patientContext: patientContext || null,
+        lang
       });
-
-      setMessages(prev => [...prev, { role: 'assistant', text: response.data.response }]);
-    } catch (error) {
-      const serverMsg = error.response?.data?.error;
-      setMessages(prev => [
-        ...prev,
-        {
-          role: 'assistant',
-          text: serverMsg || 'Sorry, I am having trouble connecting to the server right now. Make sure the GEMINI_API_KEY is set in the backend.'
-        }
-      ]);
+      setMessages((prev) => [...prev, { role: 'assistant', text: res.data.response }]);
+    } catch (err) {
+      const msg = err.response?.data?.error || 'Could not reach AI assistant.';
+      setMessages((prev) => [...prev, { role: 'assistant', text: msg }]);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    askQuestion(input);
+  };
+
+  const options = SUGGESTED_QUESTIONS[lang] || SUGGESTED_QUESTIONS.en;
+
   return (
     <div className="fixed bottom-6 right-6 z-50">
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            transition={{ duration: 0.2 }}
-            className="mb-4 bg-white/70 backdrop-blur-xl border border-white/40 shadow-2xl rounded-2xl w-80 sm:w-96 overflow-hidden flex flex-col h-[500px]"
-          >
-            {/* Header */}
-            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-4 flex justify-between items-center text-white">
-              <div className="flex items-center gap-2">
-                <Bot className="w-5 h-5" />
-                <h3 className="font-semibold">Dr. AI Assistant</h3>
+      {isOpen && (
+        <div className="mb-3 bg-white border border-gray-200 shadow-xl rounded-2xl w-80 sm:w-96 flex flex-col h-[500px] overflow-hidden">
+          <div className="bg-blue-600 text-white p-4 flex justify-between items-center">
+            <div>
+              <span className="font-semibold block">Dr. AI Assistant</span>
+              <span className="text-xs text-blue-100">
+                {lang === 'hi' ? 'केवल CKD और किडनी स्वास्थ्य' : 'CKD & Kidney Health Only'}
+              </span>
+            </div>
+            <button onClick={() => setIsOpen(false)} className="cursor-pointer">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
+            {messages.map((m, i) => (
+              <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                <div className={`px-3 py-2 rounded-xl max-w-[85%] text-sm whitespace-pre-line ${
+                  m.role === 'user' ? 'bg-blue-600 text-white' : 'bg-white border text-gray-800'
+                }`}>
+                  {m.text}
+                </div>
               </div>
-              <button onClick={() => setIsOpen(false)} className="hover:bg-white/20 p-1 rounded-md transition">
-                <X className="w-5 h-5" />
-              </button>
+            ))}
+
+            {/* Quick question options */}
+            <div className="pt-2">
+              <p className="text-[11px] font-semibold text-gray-400 uppercase mb-1.5">
+                {lang === 'hi' ? 'आप यह पूछ सकते हैं:' : 'Suggested Questions:'}
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {options.map((q) => (
+                  <button
+                    key={q}
+                    type="button"
+                    disabled={loading}
+                    onClick={() => askQuestion(q)}
+                    className="text-left text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-lg px-2.5 py-1.5 transition cursor-pointer disabled:opacity-50"
+                  >
+                    {q}
+                  </button>
+                ))}
+              </div>
             </div>
 
-            {/* Chat Area */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50/50">
-              {messages.map((msg, idx) => (
-                <div key={idx} className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${msg.role === 'user' ? 'bg-indigo-100 text-indigo-600' : 'bg-blue-100 text-blue-600'}`}>
-                    {msg.role === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
-                  </div>
-                  <div className={`p-3 rounded-2xl max-w-[75%] text-sm shadow-sm ${msg.role === 'user' ? 'bg-indigo-600 text-white rounded-tr-none' : 'bg-white border border-gray-100 text-gray-800 rounded-tl-none'}`}>
-                    {msg.text}
-                  </div>
-                </div>
-              ))}
-              {isLoading && (
-                <div className="flex gap-3">
-                  <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  </div>
-                  <div className="p-3 bg-white border border-gray-100 rounded-2xl rounded-tl-none shadow-sm text-sm text-gray-500">
-                    Thinking...
-                  </div>
-                </div>
-              )}
-              <div ref={messagesEndRef} />
-            </div>
+            {loading && <div className="text-xs text-gray-500">Thinking...</div>}
+            <div ref={endRef} />
+          </div>
 
-            {/* Input Area */}
-            <div className="p-3 bg-white border-t border-gray-100">
-              <form 
-                onSubmit={(e) => { e.preventDefault(); handleSend(); }}
-                className="flex gap-2"
-              >
-                <input
-                  type="text"
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  placeholder="Ask a question..."
-                  className="flex-1 bg-gray-50 border border-gray-200 rounded-full px-4 py-2 text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition"
-                />
-                <button 
-                  type="submit"
-                  disabled={isLoading || !input.trim()}
-                  className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white p-2 rounded-full transition flex items-center justify-center w-10 h-10"
-                >
-                  <Send className="w-4 h-4" />
-                </button>
-              </form>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          <form onSubmit={handleSubmit} className="p-3 border-t bg-white flex gap-2">
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder={lang === 'hi' ? 'CKD या किडनी से जुड़ा सवाल पूछें...' : 'Ask about CKD, diet, or lab values...'}
+              className="flex-1 border rounded-full px-4 py-2 text-sm outline-none focus:border-blue-500"
+            />
+            <button
+              type="submit"
+              disabled={loading || !input.trim()}
+              className="bg-blue-600 text-white p-2 rounded-full disabled:bg-gray-300 cursor-pointer"
+            >
+              <Send className="w-4 h-4" />
+            </button>
+          </form>
+        </div>
+      )}
 
-      {/* Floating Button */}
-      <motion.button
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
+      <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-14 h-14 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full shadow-xl flex items-center justify-center text-white hover:shadow-2xl transition-shadow border border-white/20"
+        className="w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg flex items-center justify-center cursor-pointer ml-auto"
       >
         {isOpen ? <X className="w-6 h-6" /> : <MessageCircle className="w-6 h-6" />}
-      </motion.button>
+      </button>
     </div>
   );
-};
-
-export default Chatbot;
+}
