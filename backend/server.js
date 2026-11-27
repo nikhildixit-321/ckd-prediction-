@@ -17,7 +17,6 @@ app.use(express.json());
 app.use('/api/auth',        require('./routes/auth'));
 app.use('/api/predictions', require('./routes/predict'));
 app.use('/api/chat',        require('./routes/chat'));
-app.use('/api/compare',     require('./routes/compare'));
 app.use('/api/diet',        require('./routes/diet'));
 
 // Health check

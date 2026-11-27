@@ -4,7 +4,6 @@ import { T } from './lang/translations';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import History from './pages/History';
-import Compare from './pages/Compare';
 import Trends from './pages/Trends';
 
 // Redirect to login page if user has no token
@@ -36,7 +35,6 @@ function Navbar() {
         <div className="flex items-center gap-4 text-sm font-medium flex-wrap">
           <Link to="/dashboard" className="text-gray-700 hover:text-blue-600">{tx.dashboard}</Link>
           <Link to="/history"   className="text-gray-700 hover:text-blue-600">{tx.history}</Link>
-          <Link to="/compare"   className="text-gray-700 hover:text-blue-600">{tx.compare}</Link>
           <Link to="/trends"    className="text-gray-700 hover:text-blue-600">{tx.trends}</Link>
           <button
             onClick={toggleLang}
@@ -64,7 +62,6 @@ export default function App() {
               <Route path="/"         element={<Login />} />
               <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
               <Route path="/history"   element={<PrivateRoute><History /></PrivateRoute>} />
-              <Route path="/compare"   element={<PrivateRoute><Compare /></PrivateRoute>} />
               <Route path="/trends"    element={<PrivateRoute><Trends /></PrivateRoute>} />
               <Route path="*"          element={<Navigate to="/" replace />} />
             </Routes>

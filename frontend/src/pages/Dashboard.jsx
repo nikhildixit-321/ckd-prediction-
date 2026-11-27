@@ -193,16 +193,10 @@ export default function Dashboard() {
             <div className="flex flex-wrap gap-3">
               <button
                 onClick={downloadPDF}
-                className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-indigo-700"
+                className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-indigo-700 cursor-pointer"
               >
                 {tx.downloadReport}
               </button>
-              <Link
-                to="/compare"
-                className="bg-purple-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-purple-700"
-              >
-                {tx.compareAll}
-              </Link>
               <Link
                 to="/trends"
                 className="bg-teal-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-teal-700"
