@@ -250,9 +250,14 @@ export default function Dashboard() {
                 </div>
 
                 <div className={`p-5 text-white ${result.prediction === 1 ? 'bg-red-700' : 'bg-emerald-700'}`}>
-                  <h2 className="text-xl font-bold">
-                    {result.prediction === 1 ? tx.highRisk : tx.lowRisk}
-                  </h2>
+                  <div className="flex justify-between items-start gap-2 flex-wrap">
+                    <h2 className="text-xl font-bold">
+                      {result.prediction === 1 ? tx.highRisk : tx.lowRisk}
+                    </h2>
+                    <span className="bg-white/20 text-white text-[11px] font-semibold px-2.5 py-0.5 rounded-full">
+                      ✓ Saved to History
+                    </span>
+                  </div>
                   <p className="mt-1 text-base font-medium">{tx.probability}: {(result.probability * 100).toFixed(1)}%</p>
                   <div className="mt-3 pt-2 border-t border-white/20 text-xs flex flex-wrap gap-x-4 gap-y-1 opacity-95">
                     <span><strong>Patient:</strong> {result.patientName || patientName}</span>

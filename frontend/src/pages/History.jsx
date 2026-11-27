@@ -6,6 +6,7 @@ import { API_BASE_URL } from '../config';
 export default function History() {
   const [history, setHistory] = useState([]);
   const [search, setSearch] = useState('');
+  const [selectedDiet, setSelectedDiet] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -114,13 +115,14 @@ export default function History() {
                   <th className="px-4 py-3 text-left border-b">BP / Creatinine / Hemo</th>
                   <th className="px-4 py-3 text-left border-b">Screening Result</th>
                   <th className="px-4 py-3 text-left border-b">Risk %</th>
+                  <th className="px-4 py-3 text-left border-b">Diet Plan</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200">
                 {loading ? (
-                  <tr><td colSpan="6" className="px-4 py-6 text-center text-slate-500">Loading records...</td></tr>
+                  <tr><td colSpan="7" className="px-4 py-6 text-center text-slate-500">Loading records...</td></tr>
                 ) : filtered.length === 0 ? (
-                  <tr><td colSpan="6" className="px-4 py-6 text-center text-slate-500">No screening records found.</td></tr>
+                  <tr><td colSpan="7" className="px-4 py-6 text-center text-slate-500">No screening records found.</td></tr>
                 ) : (
                   filtered.map((item) => (
                     <tr key={item._id} className="hover:bg-slate-50">
@@ -136,6 +138,18 @@ export default function History() {
                         </span>
                       </td>
                       <td className="px-4 py-3 font-semibold text-slate-700">{(item.probability * 100).toFixed(1)}%</td>
+                      <td className="px-4 py-3">
+                        {item.dietPlan ? (
+                          <button
+                            onClick={() => setSelectedDiet(item)}
+                            className="text-xs bg-emerald-50 text-emerald-800 border border-emerald-200 px-2.5 py-1 rounded font-semibold hover:bg-emerald-100 cursor-pointer"
+                          >
+                            View Diet
+                          </button>
+                        ) : (
+                          <span className="text-xs text-slate-400">—</span>
+                        )}
+                      </td>
                     </tr>
                   ))
                 )}
@@ -144,6 +158,21 @@ export default function History() {
           </div>
         </div>
       </div>
+
+      {/* Saved Diet Plan Modal */}
+      {selectedDiet && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-lg w-full overflow-hidden">
+            <div className="bg-emerald-800 text-white px-5 py-3 flex justify-between items-center">
+              <h3 className="font-bold text-sm">Saved Diet Plan — {selectedDiet.patientName}</h3>
+              <button onClick={() => setSelectedDiet(null)} className="text-white hover:text-emerald-200 cursor-pointer font-bold">✕</button>
+            </div>
+            <div className="p-5 max-h-[70vh] overflow-y-auto text-sm text-slate-700 whitespace-pre-line leading-relaxed">
+              {selectedDiet.dietPlan.replace(/\*\*(.*?)\*\*/g, '$1').replace(/^#+\s*/gm, '').replace(/\|/g, ' ')}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

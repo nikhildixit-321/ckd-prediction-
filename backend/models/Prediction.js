@@ -15,6 +15,7 @@ const predictionSchema = new mongoose.Schema({
     shapValues: [Number], // Storing SHAP values for visualization
     featureNames: [String],
     baseValue: Number,
+    dietPlan: { type: String, default: '' },
     createdAt: { type: Date, default: Date.now }
 });
 

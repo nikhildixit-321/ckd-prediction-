@@ -33,7 +33,8 @@ export default function DietPlan({ result, features, label }) {
         body: JSON.stringify({
           prediction: result?.prediction,
           probability: result?.probability,
-          features
+          features,
+          predictionId: result?._id
         })
       });
       const data = await res.json();
@@ -70,8 +71,11 @@ export default function DietPlan({ result, features, label }) {
         )}
 
         {diet ? (
-          <div className="text-sm text-slate-700 leading-relaxed whitespace-pre-line bg-emerald-50/60 p-4 rounded-lg border border-emerald-200">
-            {cleanDietText(diet)}
+          <div className="space-y-2">
+            <p className="text-xs font-semibold text-emerald-700">✓ Diet plan saved to patient record</p>
+            <div className="text-sm text-slate-700 leading-relaxed whitespace-pre-line bg-emerald-50/60 p-4 rounded-lg border border-emerald-200">
+              {cleanDietText(diet)}
+            </div>
           </div>
         ) : !loading && !error && (
           <p className="text-xs text-slate-500">

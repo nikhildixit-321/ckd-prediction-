@@ -1,5 +1,6 @@
 const express = require('express');
 const Groq = require('groq-sdk');
+const Prediction = require('../models/Prediction');
 const requireLogin = require('../middleware/auth');
 
 const router = express.Router();
@@ -7,7 +8,7 @@ const router = express.Router();
 // POST /api/diet — Personalized diet and lifestyle plan from Groq AI based on CKD result
 router.post('/', requireLogin, async (req, res) => {
     try {
-        const { prediction, probability, features } = req.body;
+        const { prediction, probability, features, predictionId } = req.body;
 
         if (!process.env.GROQ_API_KEY) {
             return res.json({ diet: 'Please add GROQ_API_KEY in backend/.env to get diet recommendations.' });
@@ -46,7 +47,11 @@ Keep it short, specific, easy to follow, and tailored for Indian patients.`;
         const diet = result.choices[0]?.message?.content;
         if (!diet) return res.status(500).json({ error: 'AI returned an empty response. Please try again.' });
 
-        res.json({ diet });
+        if (predictionId) {
+            await Prediction.findByIdAndUpdate(predictionId, { dietPlan: diet }).catch(() => {});
+        }
+
+        res.json({ diet, saved: Boolean(predictionId) });
     } catch (error) {
         console.error('Diet API Error:', error.message);
         res.status(500).json({ error: 'Failed to generate diet plan. ' + error.message });
