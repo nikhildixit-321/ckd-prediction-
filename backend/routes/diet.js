@@ -36,7 +36,7 @@ Keep it short, specific, easy to follow, and tailored for Indian patients.`;
         const result = await groq.chat.completions.create({
             model: 'openai/gpt-oss-20b',
             messages: [
-                { role: 'system', content: 'You are an expert clinical nutritionist specializing in kidney disease management.' },
+                { role: 'system', content: 'You are an expert clinical nutritionist specializing in kidney disease management. Do NOT use Markdown tables (|---|), # headings, or **bold** asterisks. Use clean plain text with bullet points (•).' },
                 { role: 'user', content: prompt }
             ],
             temperature: 0.7,

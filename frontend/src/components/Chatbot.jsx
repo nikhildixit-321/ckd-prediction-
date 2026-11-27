@@ -21,6 +21,16 @@ const SUGGESTED_QUESTIONS = {
   ]
 };
 
+function cleanText(text) {
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '$1')
+    .replace(/^#+\s*/gm, '')
+    .replace(/\|/g, ' ')
+    .replace(/^[-\s:]+$/gm, '')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
 export default function Chatbot({ patientContext }) {
   const { lang } = useLang();
   const [isOpen, setIsOpen] = useState(false);
@@ -90,7 +100,7 @@ export default function Chatbot({ patientContext }) {
                 <div className={`px-3 py-2 rounded-xl max-w-[85%] text-sm whitespace-pre-line ${
                   m.role === 'user' ? 'bg-blue-600 text-white' : 'bg-white border text-gray-800'
                 }`}>
-                  {m.text}
+                  {m.role === 'assistant' ? cleanText(m.text) : m.text}
                 </div>
               </div>
             ))}
