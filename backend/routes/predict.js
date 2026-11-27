@@ -13,7 +13,7 @@ router.post('/', requireLogin, async (req, res) => {
             return res.status(400).json({ message: 'Patient features are required' });
         }
 
-        const baseUrl = process.env.ML_API_URL || 'http://localhost:8000';
+        const baseUrl = (process.env.ML_API_URL || 'http://localhost:8000').replace(/\/+$/, '');
         const mlResponse = await fetch(`${baseUrl}/predict`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
