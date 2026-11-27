@@ -42,13 +42,13 @@ Reply in ${replyLang}. Keep answers short, clear, and friendly.`;
         }
 
         const chatCompletion = await groq.chat.completions.create({
-            model: 'llama-3.3-70b-versatile',
+            model: 'openai/gpt-oss-20b',
             messages: [
                 { role: 'system', content: systemPrompt },
                 { role: 'user', content: userMessage }
             ],
             temperature: 0.5,
-            max_tokens: 512
+            max_tokens: 1024
         });
 
         const reply = chatCompletion.choices[0]?.message?.content;

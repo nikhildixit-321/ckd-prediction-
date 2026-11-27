@@ -34,13 +34,13 @@ Please provide a practical, personalized diet and lifestyle plan in these 5 sect
 Keep it short, specific, easy to follow, and tailored for Indian patients.`;
 
         const result = await groq.chat.completions.create({
-            model: 'llama-3.3-70b-versatile',
+            model: 'openai/gpt-oss-20b',
             messages: [
                 { role: 'system', content: 'You are an expert clinical nutritionist specializing in kidney disease management.' },
                 { role: 'user', content: prompt }
             ],
             temperature: 0.7,
-            max_tokens: 700
+            max_tokens: 1024
         });
 
         const diet = result.choices[0]?.message?.content;
