@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { ClipboardList, FileText, Activity, HeartPulse, FlaskConical } from 'lucide-react';
@@ -34,6 +34,11 @@ export default function Dashboard() {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // Wake up Render ML API silently as soon as user opens Dashboard
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/api/predictions/wakeup`).catch(() => {});
+  }, []);
 
   const updateField = (key, value) => {
     setFormData({

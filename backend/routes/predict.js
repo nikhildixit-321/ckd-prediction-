@@ -5,6 +5,30 @@ const sendCKDAlert = require('../utils/emailAlert');
 
 const router = express.Router();
 
+// GET /api/predictions/wakeup — Wake up Render ML API in background when user opens Dashboard
+router.get('/wakeup', async (req, res) => {
+    const baseUrl = (process.env.ML_API_URL || 'http://localhost:8000').replace(/\/+$/, '');
+    fetch(baseUrl).catch(() => {});
+    res.json({ ok: true });
+});
+
+async function callMlPredict(baseUrl, payload) {
+    const url = `${baseUrl}/predict`;
+    const opts = {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    };
+
+    let response = await fetch(url, opts);
+    // Retry once after 4s if Render ML API is waking up (502/503/504)
+    if (response.status >= 502) {
+        await new Promise((r) => setTimeout(r, 4000));
+        response = await fetch(url, opts);
+    }
+    return response;
+}
+
 // POST /api/predictions — Send patient data to ML API and save result
 router.post('/', requireLogin, async (req, res) => {
     try {
@@ -14,11 +38,7 @@ router.post('/', requireLogin, async (req, res) => {
         }
 
         const baseUrl = (process.env.ML_API_URL || 'http://localhost:8000').replace(/\/+$/, '');
-        const mlResponse = await fetch(`${baseUrl}/predict`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ...features, model_key: modelKey || 'rf' })
-        });
+        const mlResponse = await callMlPredict(baseUrl, { ...features, model_key: modelKey || 'rf' });
 
         if (!mlResponse.ok) {
             const err = await mlResponse.json().catch(() => ({}));
