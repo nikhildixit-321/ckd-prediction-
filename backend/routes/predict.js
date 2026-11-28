@@ -20,13 +20,16 @@ async function callMlPredict(baseUrl, payload) {
         body: JSON.stringify(payload)
     };
 
-    let response = await fetch(url, opts);
-    // Retry once after 4s if Render ML API is waking up (502/503/504)
-    if (response.status >= 502) {
-        await new Promise((r) => setTimeout(r, 4000));
-        response = await fetch(url, opts);
+    for (let attempt = 0; attempt < 6; attempt++) {
+        try {
+            const response = await fetch(url, opts);
+            if (response.status < 502) return response;
+        } catch {
+            // Network/cold-start error — wait and retry
+        }
+        await new Promise((r) => setTimeout(r, 5000));
     }
-    return response;
+    return fetch(url, opts);
 }
 
 // POST /api/predictions — Send patient data to ML API and save result

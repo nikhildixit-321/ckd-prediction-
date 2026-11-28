@@ -13,8 +13,9 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  // If already logged in, open dashboard directly
+  // Wake up Render Backend & ML API on login page load; redirect if already logged in
   useEffect(() => {
+    fetch(`${API_BASE_URL}/api/predictions/wakeup`).catch(() => {});
     if (localStorage.getItem('token')) {
       navigate('/dashboard', { replace: true });
     }
